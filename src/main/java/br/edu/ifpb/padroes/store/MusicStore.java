@@ -5,6 +5,10 @@ import br.edu.ifpb.padroes.customer.CustomerType;
 import br.edu.ifpb.padroes.music.AgeRestriction;
 import br.edu.ifpb.padroes.music.Album;
 import br.edu.ifpb.padroes.music.MediaType;
+import br.edu.ifpb.padroes.store.validation.AgeRestrictionValidator;
+import br.edu.ifpb.padroes.store.validation.CreditValidator;
+import br.edu.ifpb.padroes.store.validation.PurchaseValidator;
+import br.edu.ifpb.padroes.store.validation.StockValidator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -103,25 +107,19 @@ public class MusicStore {
     }
 
     public boolean validatePurchase(Customer customer, Album album) {
-        // Check stock
-        if (album.getStock() <= 0) {
-            System.out.println("Validation failed: Out of stock");
-            return false;
-        }
+        PurchaseValidator validator = buildValidationChain();
+        return validator.validate(customer, album);
+    }
 
-        // Check customer credit
-        if (customer.getCredit() < album.getPrice()) {
-            System.out.println("Validation failed: Insufficient credit");
-            return false;
-        }
+    private PurchaseValidator buildValidationChain() {
+        PurchaseValidator stock = new StockValidator();
+        PurchaseValidator credit = new CreditValidator();
+        PurchaseValidator age = new AgeRestrictionValidator();
 
-        // Check age restriction for explicit content
-        if (album.getAgeRestriction().equals(AgeRestriction.PARENTAL_ADVISORY) && customer.getDateOfBirth().isAfter(LocalDate.now().minusYears(18))) {
-            System.out.println("Validation failed: Age restriction");
-            return false;
-        }
+        stock.setNext(credit);
+        credit.setNext(age);
 
-        return true;
+        return stock;
     }
 
     public List<Album> getInventory() {
