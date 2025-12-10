@@ -67,26 +67,37 @@ public class MusicStore {
     }
 
     public void purchaseMusic(Customer customer, Album album) {
-        if (validatePurchase(customer, album)) {
-            double discount = calculateDiscount(album, customer.getType());
-            double finalPrice = album.getPrice() - discount;
 
-            System.out.println("Purchase: " + album.getFormattedName() + " by " + customer.getName());
-            System.out.println("Original price: $" + album.getPrice());
-            System.out.println("Discount: $" + discount);
-            System.out.println("Final price: $" + finalPrice);
-
-            album.decreaseStock();
-            customer.addPurchase(album);
-
-            for (Customer c : customers) {
-                if (c.isInterestedIn(album.getGenre()) && !c.equals(customer)) {
-                    System.out.println("Notifying " + c.getName() + " about popular " + album.getGenre() + " purchase");
-                }
-            }
-        } else {
-            System.out.println("Out of stock!");
+        if (!validatePurchase(customer, album)) {
+            System.out.println("Purchase denied.");
+            return;
         }
+
+        double discount = calculateDiscount(album, customer.getType());
+        double finalPrice = album.getPrice() - discount;
+
+        System.out.printf("""
+                Purchase: %s by %s
+                Original price: $%.2f
+                Discount: $%.2f
+                Final price: $%.2f
+                
+                """,
+                album.getFormattedName(), customer.getName(),
+                album.getPrice(), discount, finalPrice);
+
+        album.decreaseStock();
+        customer.addPurchase(album);
+
+        notifyInterestedCustomers(customer, album);
+    }
+
+    private void notifyInterestedCustomers(Customer buyer, Album album) {
+        customers.stream()
+                .filter(c -> !c.equals(buyer))
+                .filter(c -> c.isInterestedIn(album.getGenre()))
+                .forEach(c -> System.out.println("Notifying " + c.getName() +
+                        " about popular " + album.getGenre() + " purchase"));
     }
 
     public boolean validatePurchase(Customer customer, Album album) {
