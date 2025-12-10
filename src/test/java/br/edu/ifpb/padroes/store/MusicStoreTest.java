@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +22,16 @@ public class MusicStoreTest {
 
     @BeforeEach
     void setUp() {
-        this.store = new MusicStore();
+        store = new MusicStore();
+
+        store.addMusic(new Album("The Wall", "Pink Floyd", MediaType.VINYL, 200.00,
+                LocalDate.of(1979, Month.NOVEMBER, 30), AgeRestriction.GENERAL, "Rock", 5));
+
+        store.addMusic(new Album("Thriller", "Michael Jackson", MediaType.CD, 150.00,
+                LocalDate.of(1982, Month.NOVEMBER, 30), AgeRestriction.GENERAL, "Pop", 5));
+
+        store.addMusic(new Album("Dookie", "Green Day", MediaType.CD, 100.00,
+                LocalDate.of(1994, Month.FEBRUARY, 1), AgeRestriction.GENERAL, "Pop Punk", 5));
     }
 
     @Test
@@ -123,6 +133,42 @@ public class MusicStoreTest {
         assertEquals(3, album.getStock(), "Stock should decrease by 1 after successful purchase");
         assertEquals(expectedDiscount, store.calculateDiscount(album, customer.getType()), 0.01, "Discount should match the calculated discount");
         assertTrue(customer.getPurchases().contains(album), "Album should be added to customer's purchases");
+    }
+
+    @Test
+    @DisplayName("Should find album by title")
+    void testSearchByTitle() {
+        List<Album> results = store.searchMusic(SearchType.TITLE, "the wall");
+
+        assertEquals(1, results.size());
+        assertEquals("The Wall", results.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("Should find albums by artist")
+    void testSearchByArtist() {
+        List<Album> results = store.searchMusic(SearchType.ARTIST, "michael jackson");
+
+        assertEquals(1, results.size());
+        assertEquals("Thriller", results.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("Should find albums by genre")
+    void testSearchByGenre() {
+        List<Album> results = store.searchMusic(SearchType.GENRE, "pop punk");
+
+        assertEquals(1, results.size());
+        assertEquals("Dookie", results.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("Should find albums by media type")
+    void testSearchByType() {
+        List<Album> results = store.searchMusic(SearchType.TYPE, "VINYL");
+
+        assertEquals(1, results.size());
+        assertEquals("The Wall", results.get(0).getTitle());
     }
 
 }
