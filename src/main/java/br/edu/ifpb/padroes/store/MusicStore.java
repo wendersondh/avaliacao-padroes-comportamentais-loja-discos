@@ -14,6 +14,7 @@ import br.edu.ifpb.padroes.store.validation.StockValidator;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MusicStore {
 
@@ -29,36 +30,21 @@ public class MusicStore {
         customers.add(customer);
     }
 
-    public List<Album> searchMusic(SearchType searchType, String searchTerm) {
-        List<Album> results = new ArrayList<>();
+    public List<Album> searchMusic(SearchType searchType, String term) {
+        String lowerTerm = term.toLowerCase();
 
-        if (searchType.equals(SearchType.TITLE)) {
-            for (Album album : inventory) {
-                if (album.getTitle().toLowerCase().contains(searchTerm.toLowerCase())) {
-                    results.add(album);
-                }
-            }
-        } else if (searchType.equals(SearchType.ARTIST)) {
-            for (Album album : inventory) {
-                if (album.getArtist().toLowerCase().contains(searchTerm.toLowerCase())) {
-                    results.add(album);
-                }
-            }
-        } else if (searchType.equals(SearchType.GENRE)) {
-            for (Album album : inventory) {
-                if (album.getGenre().toLowerCase().contains(searchTerm.toLowerCase())) {
-                    results.add(album);
-                }
-            }
-        } else if (searchType.equals(SearchType.TYPE)) {
-            for (Album album : inventory) {
-                if (album.getType().name().equalsIgnoreCase(searchTerm)) {
-                    results.add(album);
-                }
-            }
-        }
+        return inventory.stream()
+                .filter(album -> matchesSearch(album, searchType, lowerTerm))
+                .collect(Collectors.toList());
+    }
 
-        return results;
+    private boolean matchesSearch(Album album, SearchType type, String term) {
+        return switch (type) {
+            case TITLE -> album.getTitle().toLowerCase().contains(term);
+            case ARTIST -> album.getArtist().toLowerCase().contains(term);
+            case GENRE -> album.getGenre().toLowerCase().contains(term);
+            case TYPE -> album.getType().name().equalsIgnoreCase(term);
+        };
     }
 
     public double calculateDiscount(Album album, CustomerType customerType) {
