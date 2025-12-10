@@ -5,6 +5,7 @@ import br.edu.ifpb.padroes.customer.CustomerType;
 import br.edu.ifpb.padroes.music.AgeRestriction;
 import br.edu.ifpb.padroes.music.Album;
 import br.edu.ifpb.padroes.music.MediaType;
+import br.edu.ifpb.padroes.store.discount.DiscountCalculator;
 import br.edu.ifpb.padroes.store.validation.AgeRestrictionValidator;
 import br.edu.ifpb.padroes.store.validation.CreditValidator;
 import br.edu.ifpb.padroes.store.validation.PurchaseValidator;
@@ -61,26 +62,8 @@ public class MusicStore {
     }
 
     public double calculateDiscount(Album album, CustomerType customerType) {
-        double discount = 0;
-
-        if (customerType.equals(CustomerType.VIP)) {
-            discount = album.getPrice() * 0.20;
-        } else if (customerType.equals(CustomerType.PREMIUM)) {
-            discount = album.getPrice() * 0.15;
-        } else if (customerType.equals(CustomerType.REGULAR)) {
-            discount = album.getPrice() * 0.05;
-        }
-
-        // Additional discounts
-        if (album.getType().equals(MediaType.VINYL) && album.getReleaseDate().getYear() < 1980) {
-            discount += album.getPrice() * 0.10;
-        }
-
-        if (album.getGenre().equalsIgnoreCase("Pop Punk") && customerType.equals(CustomerType.VIP)) {
-            discount += album.getPrice() * 0.05;
-        }
-
-        return discount;
+        DiscountCalculator calculator = new DiscountCalculator();
+        return calculator.calculateDiscount(album, customerType);
     }
 
     public void purchaseMusic(Customer customer, Album album) {
